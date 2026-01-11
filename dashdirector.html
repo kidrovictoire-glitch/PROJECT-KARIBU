@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Director Analytics | KGL PRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --kgl-dark: #1e2125;
+            --kgl-gold: #FFD700;
+            --kgl-bg: #f0f2f5;
+            --sidebar-width: 260px;
+        }
+
+        body { background-color: var(--kgl-bg); font-family: 'Inter', 'Segoe UI', sans-serif; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: rgb(22, 22, 21);
+            height: 100vh;
+            color: rgb(96, 102, 96);
+            padding-top: 25px;
+            position: fixed;
+            width: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(70, 68, 68, 0.1);
+        }
+
+        .sidebar-brand { padding: 0 25px 30px; border-bottom: 1px solid rgba(130, 125, 125, 0.1); margin-bottom: 20px; }
+
+        .nav-link { 
+            color: #c830b1; 
+            padding: 14px 25px; 
+            cursor: pointer; 
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.05); }
+        
+        .nav-link.active { 
+            background-color: rgba(14, 254, 134, 0.844); 
+            color: var(--kgl-gold) !important; 
+            font-weight: 600; 
+            border-right: 4px solid var(--kgl-gold); 
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(208, 187, 187, 0.1);
+        }
+
+        /* Main Content Styling */
+        .main-wrapper { margin-left: var(--sidebar-width); }
+        
+        .top-header {
+            background: rgb(192, 174, 174);
+            padding: 18px 40px;
+            /* border-bottom: 1px solid #4c20fc; */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .main-content { padding: 35px 40px; }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            border: none;
+            border-left: 4px solid #4e73df;
+            transition: all 0.25s ease-in-out;
+        }
+        
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.15); }
+        .card-revenue { border-left-color: #1cc88a; }
+        .card-stock { border-left-color: #36b9cc; }
+        .card-credit { border-left-color: #e74a3b; }
+        .card-dealers { border-left-color: #f6c23e; }
+
+        .stat-label { color: #4e73df; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #5a5c69; }
+
+        .chart-container { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 25px; 
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .hidden-section { display: none; }
+        
+        .branch-pill {
+            background: #f8f9fc;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #eaecf4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <nav class="sidebar">
+            <div class="sidebar-brand">
+                <h4 class="text-white fw-bold m-0">KGL <span style="color:var(--kgl-gold)">PRO</span></h4>
+                <small class="text-muted">Enterprise Analytics</small>
+            </div>
+            
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" id="nav-agg" onclick="showSection('agg-section')">
+                        <span class="me-2">📊</span> Global Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="nav-branches" onclick="showSection('branch-section')">
+                        <span class="me-2">🏢</span> Branch Comparison
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="nav-credit" onclick="showSection('credit-section')">
+                        <span class="me-2">⚠️</span> Credit Exposure
+                    </a>
+                </li>
+            </ul>
+
+            <div class="logout-section">
+                <button class="btn btn-outline-danger btn-sm w-100 py-2 d-flex align-items-center justify-content-center" onclick="confirmLogout()">
+                    <span class="me-2">🚪</span> Sign Out
+                </button>
+            </div>
+        </nav>
+
+        <div class="col main-wrapper">
+            <header class="top-header">
+                <div>
+                    <h5 class="m-0 fw-bold text-secondary">Director's Overview</h5>
+                    <small class="text-muted" id="current-date"></small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="text-end me-3">
+                        <div class="fw-bold small">Mr. Victor</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">System Director</div>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Mr+Victor&background=1e2125&color=FFD700" class="rounded-circle" width="40" alt="Profile">
+                </div>
+            </header>
+
+            <main class="main-content">
+
+                <div id="agg-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card card-revenue">
+                                <div class="stat-label">Annual Revenue</div>
+                                <div class="stat-value">UGX 84.2M</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card card-stock">
+                                <div class="stat-label">Global Stock</div>
+                                <div class="stat-value">124.5 Tons</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card card-credit">
+                                <div class="stat-label">Pending Credit</div>
+                                <div class="stat-value">UGX 12.8M</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card card-dealers">
+                                <div class="stat-label">Active Dealers</div>
+                                <div class="stat-value">42 Partners</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="row">
+                        <div class="col-lg-8">
+                            <div class="chart-container">
+                                <h6 class="fw-bold text-dark mb-4">Revenue Growth Trend</h6>
+                                <canvas id="salesTrendChart" height="300"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h6 class="fw-bold text-dark mb-4">Stock Distribution</h6>
+                                <canvas id="produceChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+
+                <div id="branch-section" class="hidden-section">
+                    <h5 class="mb-4 fw-bold">Inter-Branch Analytics</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="chart-container border-top border-primary border-4">
+                                <h5 class="fw-bold">Maganjo HQ</h5>
+                                <div class="mt-4">
+                                    <div class="branch-pill mb-2 d-flex justify-content-between">
+                                        <span>Total Sales</span> <span class="fw-bold text-primary">UGX 45.1M</span>
+                                    </div>
+                                    <div class="branch-pill mb-2 d-flex justify-content-between">
+                                        <span>Stock Volume</span> <span class="fw-bold text-success">62.0 Tons</span>
+                                    </div>
+                                    <div class="branch-pill d-flex justify-content-between">
+                                        <span>Staff Count</span> <span class="fw-bold">3 Personnel</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container border-top border-info border-4">
+                                <h5 class="fw-bold">Matugga Branch</h5>
+                                <div class="mt-4">
+                                    <div class="branch-pill mb-2 d-flex justify-content-between">
+                                        <span>Total Sales</span> <span class="fw-bold text-primary">UGX 39.1M</span>
+                                    </div>
+                                    <div class="branch-pill mb-2 d-flex justify-content-between">
+                                        <span>Stock Volume</span> <span class="fw-bold text-success">62.5 Tons</span>
+                                    </div>
+                                    <div class="branch-pill d-flex justify-content-between">
+                                        <span>Staff Count</span> <span class="fw-bold">3 Personnel</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="credit-section" class="hidden-section">
+                    <h5 class="mb-4 fw-bold">Credit Risk Assessment</h5>
+                    <div class="chart-container">
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.85rem;">
+                                        <th>BRANCH</th>
+                                        <th>DEBTOR COUNT</th>
+                                        <th>TOTAL OUTSTANDING</th>
+                                        <th>RISK STATUS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold">Maganjo</td>
+                                        <td>14 Active</td>
+                                        <td class="fw-bold">UGX 7,200,000</td>
+                                        <td><span class="badge rounded-pill bg-warning text-dark">Elevated</span></td>
+                                        <td><button class="btn btn-sm btn-light border">View List</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Matugga</td>
+                                        <td>9 Active</td>
+                                        <td class="fw-bold">UGX 5,600,000</td>
+                                        <td><span class="badge rounded-pill bg-success">Stable</span></td>
+                                        <td><button class="btn btn-sm btn-light border">View List</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set current date
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    function showSection(sectionId) {
+        ['agg-section', 'branch-section', 'credit-section'].forEach(id => {
+            document.getElementById(id).classList.add('hidden-section');
+        });
+        document.getElementById(sectionId).classList.remove('hidden-section');
+        
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        const navId = sectionId === 'agg-section' ? 'nav-agg' : (sectionId === 'branch-section' ? 'nav-branches' : 'nav-credit');
+        document.getElementById(navId).classList.add('active');
+    }
+
+    function confirmLogout() {
+        if(confirm("Are you sure you want to log out of the Executive Suite?")) {
+            window.location.href = "login.html"; // Redirection logic
+        }
+    }
+
+    // Chart Data
+    const ctxTrend = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Monthly Revenue (Millions)',
+                data: [45, 52, 48, 61, 75, 84],
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    const ctxProduce = document.getElementById('produceChart').getContext('2d');
+    new Chart(ctxProduce, {
+        type: 'doughnut',
+        data: {
+            labels: ['Beans', 'Maize', 'Peas', 'G-nuts', 'Soy'],
+            datasets: [{
+                data: [40, 20, 15, 15, 10],
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                hoverOffset: 10
+            }]
+        },
+        options: { 
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+
+</body>
+</html>

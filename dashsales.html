@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Agent Dashboard | KGL PRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --kgl-dark: #1e2125;
+            --kgl-green: #32CD32; /* Aligned with Director Style */
+            --kgl-bg: #f8f9fa;    /* Aligned with Director Style */
+        }
+
+        body { 
+            background-color: var(--kgl-bg); 
+            font-family: 'Segoe UI', sans-serif; 
+        }
+
+        /* Sidebar Styling - Matched to Director Portal */
+        .sidebar {
+            background-color: var(--kgl-dark);
+            min-height: 100vh;
+            color: white;
+            padding-top: 25px;
+            position: fixed;
+            width: 250px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-link {
+            color: #adb5bd;
+            padding: 12px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover { 
+            color: white; 
+            background: rgba(255,255,255,0.05); 
+        }
+
+        .nav-link.active {
+            background-color: var(--kgl-green);
+            color: black !important;
+            font-weight: 600;
+            border-radius: 0 25px 25px 0;
+            margin-right: 15px;
+        }
+
+        /* Layout Adjustments */
+        .main-wrapper { margin-left: 250px; }
+        .main-content { padding: 30px; }
+
+        /* Card Styling - Matched to "data-card" in Director Portal */
+        .stat-card, .form-container, .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: none;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: var(--kgl-dark);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top-header {
+            background: white;
+            padding: 12px 40px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .hidden-section { display: none; }
+        
+        .logout-box {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Button Styling */
+        .btn-kgl { 
+            background-color: var(--kgl-green); 
+            color: #000; 
+            font-weight: 600; 
+            border: none; 
+            transition: 0.2s;
+        }
+        .btn-kgl:hover { 
+            background-color: #28a428; 
+            transform: translateY(-2px);
+        }
+
+        .text-kgl-green { color: var(--kgl-green); }
+
+        .stock-alert {
+            display: none;
+            border: none;
+            background-color: #fff5f5;
+            color: #d63031;
+            border-left: 5px solid #d63031;
+            border-radius: 8px;
+        }
+
+        /* Input overrides to look cleaner */
+        .form-control:focus, .form-select:focus {
+            border-color: var(--kgl-green);
+            box-shadow: 0 0 0 0.25rem rgba(50, 205, 50, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <nav class="sidebar">
+            <div class="text-center mb-4">
+                <i class="fas fa-leaf fa-3x mb-2 text-kgl-green"></i> <h5 class="text-white fw-bold mb-0">KGL <span class="text-kgl-green">PRO</span></h5>
+                <small class="text-muted" style="font-size: 0.7rem; letter-spacing: 1.5px;">SALES AGENT PORTAL</small>
+            </div>
+            
+            <ul class="nav flex-column mt-2">
+                <li class="nav-item"><a class="nav-link active" id="nav-home" onclick="showSection('home-section')"><i class="fas fa-th-large me-3"></i> Overview</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-cash" onclick="showSection('cash-section')"><i class="fas fa-cash-register me-3"></i> Cash Sale</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-credit" onclick="showSection('credit-section')"><i class="fas fa-file-invoice-dollar me-3"></i> Credit Registry</a></li>
+            </ul>
+
+            <div class="logout-box">
+                <a href="login.html" class="btn btn-outline-danger btn-sm w-100 py-2">
+                    <i class="fas fa-sign-out-alt me-2"></i> Log Out
+                </a>
+            </div>
+        </nav>
+
+        <div class="col main-wrapper">
+            <header class="top-header">
+                <div>
+                    <span class="text-muted" id="breadcrumb">Portal / <strong>Overview</strong></span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="text-end me-3">
+                        <div class="fw-bold small">Jane Doe</div>
+                        <div class="text-muted small" style="font-size: 0.7rem;">Maganjo Branch</div>
+                    </div>
+                    <div class="bg-dark rounded-circle" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--kgl-green); border: 1px solid var(--kgl-green);">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                
+                <div id="stockAlert" class="alert stock-alert shadow-sm mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Stock Outage</h6>
+                            <small>Item unavailable. Branch Manager has been notified for restocking.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="home-section">
+                    <h4 class="fw-bold mb-4">Daily Performance</h4>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="stat-card text-center border-bottom border-4 border-success">
+                                <div class="text-muted small fw-bold mb-2">REVENUE (TODAY)</div>
+                                <div class="h2 fw-bold mb-0">UGX 450,000</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card text-center border-bottom border-4 border-primary">
+                                <div class="text-muted small fw-bold mb-2">COMPLETED SALES</div>
+                                <div class="h2 fw-bold mb-0">12</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card text-center border-bottom border-4 border-dark">
+                                <div class="text-muted small fw-bold mb-2">BRANCH RANK</div>
+                                <div class="h2 fw-bold mb-0">#1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <h6 class="section-title">Recent Transactions</h6>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ref ID</th>
+                                    <th>Buyer</th>
+                                    <th>Produce</th>
+                                    <th>Weight</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#KGL-882</td>
+                                    <td>John Musoke</td>
+                                    <td>Beans</td>
+                                    <td>100kg</td>
+                                    <td class="fw-bold">UGX 350,000</td>
+                                    <td><span class="badge bg-success-subtle text-success px-3">Paid</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#KGL-881</td>
+                                    <td>Sarah Namuli</td>
+                                    <td>Maize</td>
+                                    <td>80kg</td>
+                                    <td class="fw-bold">UGX 96,000</td>
+                                    <td><span class="badge bg-warning-subtle text-warning px-3">Credit</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="cash-section" class="hidden-section">
+                    <form class="form-container" onsubmit="return handleSale(event)">
+                        <h6 class="section-title">Record Cash Sale</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold small text-muted">Produce Item</label>
+                                <select class="form-select py-2" id="cashProduce" required onchange="updatePrice('cash')">
+                                    <option value="">Choose item...</option>
+                                    <option value="Beans">Beans (Stock: 500kg)</option>
+                                    <option value="Maize">Maize (OUT OF STOCK)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold small text-muted">Weight (Kgs)</label>
+                                <input type="number" class="form-control py-2" id="cashTonnage" required>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold small text-muted">Unit Price (UGX)</label>
+                                <input type="text" class="form-control py-2 bg-light fw-bold" id="cashPrice" readonly>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold small text-muted">Amount Received (UGX)</label>
+                                <input type="number" class="form-control py-2" style="border: 1px solid var(--kgl-green)" required>
+                            </div>
+                        </div>
+                        <div class="d-grid col-md-4 mx-auto">
+                            <button type="submit" class="btn btn-kgl btn-lg">Finalize Sale</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="credit-section" class="hidden-section">
+                    <form class="form-container" onsubmit="return handleSale(event)">
+                        <h6 class="section-title">New Credit Entry</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-4"><label class="form-label small fw-bold text-muted">Buyer Name</label><input type="text" class="form-control" required></div>
+                            <div class="col-md-4 mb-4"><label class="form-label small fw-bold text-muted">NIN Number</label><input type="text" class="form-control" required></div>
+                            <div class="col-md-4 mb-4"><label class="form-label small fw-bold text-muted">Repayment Date</label><input type="date" class="form-control" required></div>
+                            <div class="col-md-8 mb-4">
+                                <label class="form-label small fw-bold text-muted">Produce</label>
+                                <select class="form-select" id="creditProduce" required onchange="updatePrice('credit')">
+                                    <option value="">Select produce...</option>
+                                    <option value="Beans">Beans</option>
+                                    <option value="Maize">Maize</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <label class="form-label small fw-bold text-muted">Total Due (UGX)</label>
+                                <input type="number" class="form-control" id="creditPrice" required>
+                            </div>
+                        </div>
+                        <div class="d-grid col-md-4 mx-auto">
+                            <button type="submit" class="btn btn-kgl btn-lg">Authorize Credit Sale</button>
+                        </div>
+                    </form>
+                </div>
+
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    const prices = { 'Beans': 3500, 'Maize': 1200 };
+
+    function updatePrice(type) {
+        const produce = document.getElementById(type + 'Produce').value;
+        const priceField = document.getElementById(type + 'Price');
+        const alertBox = document.getElementById('stockAlert');
+        
+        alertBox.style.display = (produce === 'Maize') ? 'block' : 'none';
+
+        if (produce) {
+            if (type === 'cash') {
+                priceField.value = "UGX " + prices[produce].toLocaleString();
+            } else {
+                priceField.value = prices[produce]; 
+            }
+        } else {
+            priceField.value = "";
+        }
+    }
+
+    function showSection(sectionId) {
+        ['home-section', 'cash-section', 'credit-section'].forEach(id => {
+            document.getElementById(id).classList.add('hidden-section');
+        });
+        document.getElementById(sectionId).classList.remove('hidden-section');
+
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        
+        const navMap = {
+            'home-section': { nav: 'nav-home', text: 'Portal / <strong>Overview</strong>' },
+            'cash-section': { nav: 'nav-cash', text: 'Portal / <strong>Cash Sale</strong>' },
+            'credit-section': { nav: 'nav-credit', text: 'Portal / <strong>Credit Sale</strong>' }
+        };
+        
+        document.getElementById(navMap[sectionId].nav).classList.add('active');
+        document.getElementById('breadcrumb').innerHTML = navMap[sectionId].text;
+    }
+
+    function handleSale(e) {
+        e.preventDefault();
+        alert("Transaction successful. Records updated at Maganjo Branch.");
+        e.target.reset();
+        return false;
+    }
+</script>
+
+</body>
+</html>

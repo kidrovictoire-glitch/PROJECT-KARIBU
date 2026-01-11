@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KGL Manager Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --kgl-dark: #1e2125;
+            --kgl-green: #32CD32;
+            --kgl-bg: #f8f9fa;
+            --kgl-accent: #0d6efd;
+        }
+
+        body { background-color: var(--kgl-bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: var(--kgl-dark);
+            min-height: 100vh;
+            color: white;
+            padding-top: 20px;
+            position: fixed;
+            width: 16.666667%;
+            z-index: 1000;
+        }
+
+        .nav-link {
+            color: #adb5bd;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover { color: white; }
+
+        .nav-link.active {
+            background-color: var(--kgl-green);
+            color: #000 !important;
+            font-weight: 600;
+            border-radius: 0 25px 25px 0;
+            margin-right: 15px;
+        }
+
+        /* Layout */
+        .main-wrapper { margin-left: 16.666667%; }
+        .main-content { padding: 40px; }
+
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: var(--kgl-accent);
+            font-size: 1.15rem;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+
+        .top-header {
+            background: white;
+            padding: 12px 40px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hidden-section { display: none; }
+        
+        .logout-box {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 15px;
+        }
+
+        .form-label { font-weight: 600; font-size: 0.85rem; color: #555; }
+
+        /* Suppliers Specific Styles */
+        .table-container {
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        
+        .badge-internal {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-dealer {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stat-card-supplier {
+            border-left: 4px solid var(--kgl-green);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card-supplier:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <nav class="sidebar">
+            <div class="px-4 mb-4">
+                <h4 class="text-white fw-bold">KGL</h4>
+                <small class="text-muted">Karibu Groceries LTD</small>
+            </div>
+            
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a class="nav-link active" id="nav-home" onclick="showSection('home-section')">🏠 Home</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-cash" onclick="showSection('cash-section')">💵 Cash Sale</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-credit" onclick="showSection('credit-section')">💳 Credit Sale</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-procurement" onclick="showSection('procurement-section')">📦 Procurement</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-suppliers" onclick="showSection('suppliers-section')">🚛 Suppliers</a></li>
+            </ul>
+
+            <div class="logout-box">
+                <hr class="text-secondary">
+                <a href="login.html" class="btn btn-outline-light btn-sm w-100">🚪 Logout</a>
+            </div>
+        </nav>
+
+        <div class="col main-wrapper">
+            <header class="top-header">
+                <span class="breadcrumb-text" id="breadcrumb">Home / <strong>Dashboard</strong></span>
+                <div class="user-info">
+                    <span class="badge bg-light text-dark border p-2">👤 Manager Account</span>
+                </div>
+            </header>
+
+            <main class="main-content">
+                
+                <div id="home-section">
+                    <h3 class="text-primary fw-bold mb-4">Branch Overview</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm p-3">
+                                <h6 class="text-muted">Stock available (Total)</h6>
+                                <h2 class="fw-bold">5,240 Kg</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm p-3">
+                                <h6 class="text-muted">Active Credit Sales</h6>
+                                <h2 class="fw-bold text-danger">8 Clients</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="cash-section" class="hidden-section">
+                    <h3 class="text-center text-primary mb-5 fw-bold">Produce Selling Entry</h3>
+                    <form class="form-container">
+                        <div class="section-title">Cash Sale Transaction Details</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Produce Name</label>
+                                <input type="text" class="form-control" required placeholder="Alpha-numeric">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tonnage (Kgs)</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Amount Paid (UgX)</label>
+                                <input type="number" class="form-control" min="10000" required placeholder="Min 10,000">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Buyer's Name</label>
+                                <input type="text" class="form-control" minlength="2" required placeholder="Alpha-numeric">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Sales Agent Name</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Time</label>
+                                <input type="time" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary px-5 mt-3">Confirm Cash Sale</button>
+                    </form>
+                </div>
+
+                <div id="credit-section" class="hidden-section">
+                    <h3 class="text-center text-primary mb-5 fw-bold">Credit/Deferred Payment Registry</h3>
+                    <form class="form-container">
+                        <div class="section-title">Buyer & Credit Information</div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Buyer Name</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">National ID (NIN)</label>
+                                <input type="text" class="form-control" required placeholder="Valid NIN format">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Contact (Phone)</label>
+                                <input type="tel" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Amount Due (UgX)</label>
+                                <input type="number" class="form-control" min="10000" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Produce Name</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Type of Produce</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tonnage (Kgs)</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sales Agent Name</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Dispatch Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning px-5 mt-3">Log Credit Sale</button>
+                    </form>
+                </div>
+
+                <div id="procurement-section" class="hidden-section">
+                    <h3 class="text-center text-primary mb-5 fw-bold">Produce Procurement Portal</h3>
+                    <form class="form-container">
+                        <div class="section-title">Record New Produce Intake</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name of Produce (Alpha-numeric)</label>
+                                <input type="text" class="form-control" required placeholder="e.g. Beans 01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Type (Alphabets only)</label>
+                                <input type="text" class="form-control" pattern="[A-Za-z]{2,}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Time</label>
+                                <input type="time" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tonnage (Kgs)</label>
+                                <input type="number" class="form-control" min="100" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cost (UgX)</label>
+                                <input type="number" class="form-control" min="10000" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Selling Price (UgX)</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Branch Name</label>
+                                <select class="form-select" required>
+                                    <option value="Maganjo">Maganjo</option>
+                                    <option value="Matugga">Matugga</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Dealer Name</label>
+                                <input type="text" class="form-control" minlength="2" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Dealer Contact</label>
+                                <input type="tel" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success px-5 mt-3">Submit Procurement Entry</button>
+                    </form>
+                </div>
+
+                <div id="suppliers-section" class="hidden-section">
+                    <h3 class="text-primary fw-bold mb-4">Supplier & Source Management</h3>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-3 stat-card-supplier">
+                                <h6 class="text-muted small mb-1">Total Sources</h6>
+                                <h4 class="fw-bold mb-0">3 Active</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-3 stat-card-supplier" style="border-left-color: #0d6efd;">
+                                <h6 class="text-muted small mb-1">Stock Category</h6>
+                                <h4 class="fw-bold mb-0">Cereals</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="section-title mb-0 border-0">Primary Stock Sources</div>
+                            <button class="btn btn-sm btn-primary">+ Add New Supplier</button>
+                        </div>
+
+                        <div class="table-responsive table-container">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Source Type</th>
+                                        <th>Entity Name</th>
+                                        <th>Location/Branch</th>
+                                        <th>Produce Provided</th>
+                                        <th class="text-end pe-4">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="ps-4"><span class="badge-internal">Internal Farm</span></td>
+                                        <td><span class="fw-bold text-dark">Maganjo Farm</span></td>
+                                        <td>Maganjo Main</td>
+                                        <td>Beans, Maize, Soya</td>
+                                        <td class="text-end pe-4 text-success small">● Active</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><span class="badge-internal">Internal Farm</span></td>
+                                        <td><span class="fw-bold text-dark">Matugga Farm</span></td>
+                                        <td>Matugga North</td>
+                                        <td>Maize, G-nuts</td>
+                                        <td class="text-end pe-4 text-success small">● Active</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4"><span class="badge-dealer">External Dealer</span></td>
+                                        <td><span class="fw-bold text-dark">Uganda Grain Traders</span></td>
+                                        <td>Regional Hub</td>
+                                        <td>Premium Soybeans</td>
+                                        <td class="text-end pe-4 text-success small">● Active</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted small mb-0"><em>Note: Internal farms are the primary sources for Maganjo and Matugga branches.</em></p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        // 1. Hide all main sections
+        const sections = ['home-section', 'cash-section', 'credit-section', 'procurement-section', 'suppliers-section'];
+        sections.forEach(id => {
+            document.getElementById(id).classList.add('hidden-section');
+        });
+
+        // 2. Show the targeted section
+        document.getElementById(sectionId).classList.remove('hidden-section');
+
+        // 3. Update the sidebar "Active" state
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        
+        // 4. Update breadcrumbs and navigation highlight
+        const breadcrumb = document.getElementById('breadcrumb');
+        const navMap = {
+            'home-section': { nav: 'nav-home', text: 'Home / <strong>Dashboard</strong>' },
+            'cash-section': { nav: 'nav-cash', text: 'Home / Sales / <strong>Cash Sale</strong>' },
+            'credit-section': { nav: 'nav-credit', text: 'Home / Sales / <strong>Credit Sale</strong>' },
+            'procurement-section': { nav: 'nav-procurement', text: 'Home / Stock / <strong>Procurement</strong>' },
+            'suppliers-section': { nav: 'nav-suppliers', text: 'Home / Logistics / <strong>Suppliers</strong>' }
+        };
+
+        const config = navMap[sectionId];
+        document.getElementById(config.nav).classList.add('active');
+        breadcrumb.innerHTML = config.text;
+    }
+</script>
+
+</body>
+</html>
